@@ -1,0 +1,104 @@
+version: "3.1"
+services:
+    www: #WEBSERVER
+        build: .
+        container_name: www
+        ports: 
+            - "8001:80"
+        volumes:
+            - ./www:/var/www/html/
+        depends_on:
+                - db
+
+    db: #DATABASE
+        image: mysql
+        container_name: db
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            MYSQL_ROOT_PASSWORD: test 
+            MYSQL_DATABASE: myDb
+            MYSQL_USER: user
+            MYSQL_PASSWORD: test
+        ports: 
+            - "33306:3306"        
+        volumes:
+            - ./dump:/docker-entrypoint-initdb.d
+            - ./conf:/etc/mysql/conf.d
+            - persistent:/var/lib/mysql
+
+    phpmyadmin: 
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin
+        ports:
+            - 8020:80
+        environment:
+            PMA_HOST: 'db'
+            PMA_PORT: '3306'
+            PMA_USER: 'root'
+            PMA_PASSWORD: "test"
+        depends_on:
+            - db
+
+    prometheus:
+        image: prom/prometheus:latest
+        container_name: prometheus
+        hostname: prometheus
+        restart: always
+        ports:
+        - '8030:9090'
+        volumes:
+            - './config:/config'
+        command:
+            - '--config.file=/config/prometheus.yml'
+            - '--web.enable-lifecycle'
+            # keep the data in 90 days
+            - '--storage.tsdb.retention.time=90d'
+    
+    grafana:
+        image: grafana/grafana:latest
+        ports:
+        - 8050:3000
+        restart: unless-stopped
+        volumes:
+        - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+        - grafana-data:/var/lib/grafana
+    
+    mysqlexporter:
+        image: prom/mysqld-exporter:latest
+        ports:
+        - "9104:9104"
+        environment:
+        - DATA_SOURCE_NAME=root:test@(db:3306)/myDb
+        depends_on: 
+        - db
+
+    
+volumes:
+  persistent: #What does this?
+  db:
+  prometheus:
+  #alertmanager:
+  grafana-data:
+
+ #   mysqld_exporter_med_res:
+  #      image: prom/mysqld-exporter:latest
+   #     container_name: mysqlexporter
+    #    environment:
+     #   - DATA_SOURCE_NAME=exporter:exporter@(db:3306)/
+      #  ports:
+       # - "9104:9104"
+   #     command: ["-web.listen-address=:9104", "-collect.global_status=true", "-collect.global_variables=false", "-collect.slave_status=false", "-collect.info_schema.tables=false", "-collect.binlog_size=false", "-collect.info_schema.processlist=false", "-collect.info_schema.userstats=false", "-collect.info_schema.tables=false", "-collect.auto_increment.columns=false", "-collect.info_schema.tablestats=false", "-collect.perf_schema.file_events=false", "-collect.perf_schema.eventsstatements=false", "-collect.perf_schema.indexiowaits=false", "-collect.perf_schema.tableiowaits=false", "-collect.perf_schema.tablelocks=false", "-collect.perf_schema.eventswaits=false"]
+    #    depends_on:
+     #   - db
+
+    # alertmanager:
+    #     image: prom/alertmanager:latest
+    #     container_name: alertmanager
+    #     hostname: alertmanager
+    #     restart: always
+    #     ports:
+    #         - '8040:9093'
+    #     volumes:
+    #         - './config:/config'
+    #     command:
+    #         - '--config.file=/config/alertmanager.yml'
