@@ -7,7 +7,7 @@ CREATE TABLE `Person` (
   `age` int
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
---User for prometheus connection
+-- User for prometheus connection
 -- CREATE USER 'exporter'@'localhost' IDENTIFIED BY 'exporter';
 -- GRANT PROCESS, REPLICATION CLIENT ON *.* TO 'exporter'@'localhost';
 -- GRANT SELECT ON performance_schema.* TO 'exporter'@'localhost';

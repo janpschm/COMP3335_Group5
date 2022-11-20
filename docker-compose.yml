@@ -1,4 +1,4 @@
-version: "3.1"
+version: "3.2"
 services:
     # www: #WEBSERVER
     #     build: .
@@ -10,35 +10,51 @@ services:
     #     depends_on:
     #             - db
 
+    # db: #DATABASE
+    #     image: mysql
+    #     container_name: db
+    #     command: --default-authentication-plugin=mysql_native_password
+    #     environment:
+    #         MYSQL_ROOT_PASSWORD: test 
+    #         MYSQL_DATABASE: myDb
+    #         MYSQL_USER: wp_admin
+    #         MYSQL_PASSWORD: 12345
+    #     ports: 
+    #         - "33306:3306"        
+    #     volumes:
+    #         - ./database:/docker-entrypoint-initdb.d
+    #         - ./database:/etc/mysql/conf.d
+    #         - persistent:/var/lib/mysql
+
+    mysql-server:
+        container_name: mysql
+        ports:
+            - "33306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: 12345
+            MYSQL_DATABASE: wordpress
+            MYSQL_USER: wp_admin
+            MYSQL_PASSWORD: 12345
+        image: mysql
+        volumes:
+            - ./database:/docker-entrypoint-initdb.d
+            - ./database:/etc/mysql/conf.d
+            - db:/var/lib/mysql
+
     wordpress:
         image: wordpress:latest
         container_name: wordpress
         ports:
             - "8010:80"
         environment:
-            WORDPRESS_DB_HOST: db:3306
+            WORDPRESS_DB_HOST: mysql-server:3306
             WORDPRESS_DB_USER: wp_admin
             WORDPRESS_DB_PASSWORD: 12345
         depends_on:
-            - db
+            - mysql-server
         volumes:
-            - ./wordpress:/var/www/html
+            - wordpress:/var/www/html
 
-    db: #DATABASE
-        image: mysql
-        container_name: db
-        command: --default-authentication-plugin=mysql_native_password
-        environment:
-            MYSQL_ROOT_PASSWORD: test 
-            MYSQL_DATABASE: myDb
-            MYSQL_USER: wp_admin
-            MYSQL_PASSWORD: 12345
-        ports: 
-            - "33306:3306"        
-        volumes:
-            - ./database:/docker-entrypoint-initdb.d
-            - ./database:/etc/mysql/conf.d
-            - persistent:/var/lib/mysql
 
     phpmyadmin: 
         image: phpmyadmin/phpmyadmin
@@ -46,12 +62,12 @@ services:
         ports:
             - 8020:80
         environment: #logs into SQL root account
-            PMA_HOST: 'db'
+            PMA_HOST: 'mysql-server'
             PMA_PORT: '3306'
             PMA_USER: 'root'
-            PMA_PASSWORD: "test"
+            PMA_PASSWORD: "12345"
         depends_on:
-            - db
+            - mysql-server
 
     prometheus:
         image: prom/prometheus:latest
@@ -81,13 +97,13 @@ services:
         ports:
         - "9104:9104"
         environment:
-        - DATA_SOURCE_NAME=root:test@(db:3306)/myDb #give exporter root login to export data 
+        - DATA_SOURCE_NAME=root:12345@(mysql-server:3306)/mysql #give exporter root login to export data 
         depends_on: 
-        - db
+        - mysql-server
 
-    
 volumes:
   persistent: #TODO: What does do?
   db:
   prometheus:
   grafana-data:
+  wordpress:
