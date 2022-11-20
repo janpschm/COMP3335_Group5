@@ -1,0 +1,6 @@
+datasources:
+- name: Prometheus
+  access: proxy
+  type: prometheus
+  url: http://prometheus:9090 #maybe need to change the port to 8030
+  isDefault: true
