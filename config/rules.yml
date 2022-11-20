@@ -1,4 +1,3 @@
-#JP generated this file
 groups:
   - name: DemoAlerts
     rules:

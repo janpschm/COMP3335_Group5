@@ -1,6 +1,7 @@
+#This file enables grafana to use prometheus as a datasource 
 datasources:
 - name: Prometheus
   access: proxy
   type: prometheus
-  url: http://prometheus:9090 #maybe need to change the port to 8030
+  url: http://prometheus:9090 
   isDefault: true

@@ -7,9 +7,10 @@ CREATE TABLE `Person` (
   `age` int
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE USER 'exporter'@'localhost' IDENTIFIED BY 'exporter';
-GRANT PROCESS, REPLICATION CLIENT ON *.* TO 'exporter'@'localhost';
-GRANT SELECT ON performance_schema.* TO 'exporter'@'localhost';
+--User for prometheus connection
+-- CREATE USER 'exporter'@'localhost' IDENTIFIED BY 'exporter';
+-- GRANT PROCESS, REPLICATION CLIENT ON *.* TO 'exporter'@'localhost';
+-- GRANT SELECT ON performance_schema.* TO 'exporter'@'localhost';
 
 INSERT INTO `Person` (`id`, `name`,`age`) VALUES
 (1, 'William',40),
